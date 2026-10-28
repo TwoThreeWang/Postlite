@@ -191,7 +191,7 @@ tasks:
       - wails3 generate bindings -f '{{.BUILD_FLAGS}}' -clean=true{{if eq .OBFUSCATED "true"}} -obfuscated{{end}} -ts -i
 
   generate:icons:
-    summary: Generates Windows `.ico` and Mac `.icns` from appicon.png (Icon Composer `.icon` removed: on macOS it overrides appicon.png)
+    summary: Generates Windows `.ico` and Mac `.icns` from appicon.png (no Icon Composer `.icon`, which would override appicon.png on macOS)
     run: once
     dir: build
     sources:
