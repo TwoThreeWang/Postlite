@@ -46,7 +46,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-4-dev libwebkit2gtk-6.0-dev libnss3-dev pkg-config
+          sudo apt-get install -y libgtk-4-dev libwebkitgtk-6.0-dev libnss3-dev pkg-config
 
       # wails3 版本与 go.mod 保持一致
       - name: Install wails3
