@@ -1,59 +1,67 @@
-# Welcome to Your New Wails3 Project!
+# Postlite
 
-Congratulations on generating your Wails3 application! This README will guide you through the next steps to get your project up and running.
+轻量级、本地优先的 API 调试工具 —— 一个极简的 Postman 替代品。
 
-## Getting Started
+基于 **Go + Wails v3 + React + TypeScript** 构建，无 Electron、无强制云端账号，数据全部存本地。
 
-1. Navigate to your project directory in the terminal.
+## 特性
 
-2. To run your application in development mode, use the following command:
+### 请求与集合
+- 树形集合管理（文件夹 / 请求、右键重命名 / 删除、侧栏宽度可拖动且记忆展开状态）
+- 全方法支持（GET / POST / PUT / DELETE…），Header / Query / Body（raw · urlencoded · form）
+- 请求历史自动记录，点击即可重发
+- 多标签页 + 会话恢复：重启后回到上次的工作现场，未保存的标签显示圆点提示
 
-   ```
-   wails3 dev
-   ```
+### 变量与环境
+- `{{变量}}` 占位符，URL / Header / Body 全支持，鼠标悬停显示解析结果
+- 环境变量 / 集合变量两级作用域，环境变量优先
+- 响应捕获：把响应 JSON 的指定路径自动写入变量（如登录后自动存 `access_token`）
+- 一键生成代码片段
 
-   This will start your application and enable hot-reloading for both frontend and backend changes.
+### Postman 生态
+- 导入 Postman 集合（v2.x）/ 环境文件，自动识别格式
+- 粘贴 cURL 命令直接导入
+- 导出为 Postman v2.1 兼容 JSON
+- **Postman 云端同步**：填入 API Key 即可拉取账号下的全部集合与环境（同名覆盖更新，其余新建；Key 只存本机）
 
-3. To build your application for production, use:
+### Git 同步（多人协作 / 多机同步）
+- 把数据目录变成 git 仓库，一键提交快照 / 拉取 / 推送到私有远端
+- 实时滚动日志 + 逐操作分隔线，过程透明
+- 未提交改动左右对比窗口（按文件 / 按行）
+- 撤销上次提交、游离 HEAD 自动安全恢复、rebase 残留检测
+- `history.json` / `settings.json` 等隐私文件自动排除，不会误同步
 
-   ```
-   wails3 build
-   ```
+### 其他
+- 深色 / 浅色主题，自绘顶栏（无边框窗口，启动即最大化）
+- HTTP 代理设置（默认直连，忽略系统代理）
+- Windows 优先适配（WebView2），同时提供 macOS（Intel / Apple Silicon）与 Linux 构建
 
-   This will create a production-ready executable in the `build` directory.
+## 开发
 
-## Exploring Wails3 Features
+```bash
+# 开发模式（前后端热重载）
+wails3 dev
 
-Now that you have your project set up, it's time to explore the features that Wails3 offers:
+# 构建当前平台生产版本
+wails3 task build
+```
 
-1. **Check out the examples**: The best way to learn is by example. Visit the `examples` directory in the `v3/examples` directory to see various sample applications.
+要求：Go 1.26+、Node 20+、[wails3 v3.0.0-beta.34](https://v3.wails.io/)。
+Linux 需额外安装 `libgtk-3-dev libwebkit2gtk-4.1-dev`。
 
-2. **Run an example**: To run any of the examples, navigate to the example's directory and use:
+## 构建
 
-   ```
-   go run .
-   ```
+推送到 GitHub 后自动多平台构建（见 [.github/workflows/build.yml](.github/workflows/build.yml)）：
+Windows / macOS (Intel & Apple Silicon) / Linux。
 
-   Note: Some examples may be under development during the alpha phase.
+推 `v*` 标签会自动创建 Release 并附上全部产物：
 
-3. **Explore the documentation**: Visit the [Wails3 documentation](https://v3.wails.io/) for in-depth guides and API references.
+```bash
+git tag v0.1.0 && git push origin v0.1.0
+```
 
-4. **Join the community**: Have questions or want to share your progress? Join the [Wails Discord](https://discord.gg/JDdSxwjhGf) or visit the [Wails discussions on GitHub](https://github.com/wailsapp/wails/discussions).
+## 数据与隐私
 
-## Project Structure
-
-Take a moment to familiarize yourself with your project structure:
-
-- `frontend/`: Contains your frontend code (HTML, CSS, JavaScript/TypeScript)
-- `main.go`: The entry point of your Go backend
-- `app.go`: Define your application structure and methods here
-- `wails.json`: Configuration file for your Wails project
-
-## Next Steps
-
-1. Modify the frontend in the `frontend/` directory to create your desired UI.
-2. Add backend functionality in `main.go`.
-3. Use `wails3 dev` to see your changes in real-time.
-4. When ready, build your application with `wails3 build`.
-
-Happy coding with Wails3! If you encounter any issues or have questions, don't hesitate to consult the documentation or reach out to the Wails community.
+- 集合 / 环境 / 历史均为本地 JSON 文件（默认 `%APPDATA%\postlite`，可在设置中迁移）
+- Git 同步用的是你自己的远端仓库，不经任何第三方服务器
+- Postman API Key 仅保存在本机 settings.json（已被 gitignore 排除）
