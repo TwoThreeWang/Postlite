@@ -1,0 +1,97 @@
+name: Build
+
+# 触发：
+#  - 推送到 main 分支 → 全平台构建（产物在 Actions 页面下载）
+#  - 推送 v* 标签    → 构建 + 自动创建 GitHub Release 并附上产物
+#  - Actions 页面可手动触发
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: windows-amd64
+          - os: macos-latest # Apple Silicon (M 系列)
+            name: macos-arm64
+          - os: macos-13 # Intel
+            name: macos-amd64
+          - os: ubuntu-latest
+            name: linux-amd64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26.x"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Linux 需要 WebKit/GTK 开发库（Wails v3 依赖）
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libnss3-dev pkg-config
+
+      # wails3 版本与 go.mod 保持一致
+      - name: Install wails3
+        run: go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.34
+
+      # Windows / Linux：出可执行文件；macOS：package 会构建并打成 .app（adhoc 签名）
+      - name: Build (Windows/Linux)
+        if: runner.os != 'macOS'
+        run: wails3 task build
+
+      - name: Build (macOS .app)
+        if: runner.os == 'macOS'
+        run: wails3 task package
+
+      # 归档：macOS 的 .app 是目录，必须压成 zip 才能作为产物
+      - name: Stage artifacts
+        shell: bash
+        run: |
+          mkdir -p stage
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            cd bin && zip -qry "../stage/Postlite-${{ matrix.name }}.zip" "postlite.app"
+          elif [ "$RUNNER_OS" = "Windows" ]; then
+            cp bin/postlite.exe "stage/Postlite-${{ matrix.name }}.exe"
+          else
+            cp bin/postlite "stage/Postlite-${{ matrix.name }}"
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Postlite-${{ matrix.name }}
+          path: stage/*
+          if-no-files-found: error
+
+  release:
+    name: Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') # 只在推 v* 标签时发布
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: artifacts/**/*

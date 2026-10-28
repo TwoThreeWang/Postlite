@@ -1,0 +1,15 @@
+{
+	"fixed": {
+		"file_version": "0.1.0"
+	},
+	"info": {
+		"0409": {
+			"ProductVersion": "0.1.0",
+			"CompanyName": "Postlite",
+			"FileDescription": "Lightweight API client",
+			"LegalCopyright": "© 2026, Postlite",
+			"ProductName": "Postlite",
+			"Comments": "Postlite - lightweight API client"
+		}
+	}
+}
