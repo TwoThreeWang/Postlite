@@ -39,5 +39,6 @@ export type {
     ResponseResult,
     SessionData,
     SessionTab,
-    Settings
+    Settings,
+    UpdateInfo
 } from "./models.js";

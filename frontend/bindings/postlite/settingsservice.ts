@@ -14,6 +14,14 @@ export function AppInfo(): $CancellablePromise<$models.AppInfo> {
 }
 
 /**
+ * CheckUpdate 查询远端最新 Release 并与当前版本比较。
+ * 远端还没有任何 Release 时返回 HasUpdate=false 且 Latest 为空，不算错误。
+ */
+export function CheckUpdate(): $CancellablePromise<$models.UpdateInfo> {
+    return $Call.ByID(166764693);
+}
+
+/**
  * ChooseDataDir 弹出原生目录选择框；取消返回空串。
  */
 export function ChooseDataDir(): $CancellablePromise<string> {
@@ -40,6 +48,13 @@ export function OpenDataDir(): $CancellablePromise<void> {
  */
 export function OpenDevTools(): $CancellablePromise<void> {
     return $Call.ByID(3056195018);
+}
+
+/**
+ * OpenReleasesPage 用系统默认浏览器打开 Releases 页面。
+ */
+export function OpenReleasesPage(): $CancellablePromise<void> {
+    return $Call.ByID(2988182829);
 }
 
 /**

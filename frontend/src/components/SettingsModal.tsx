@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AppInfoT, SettingsT, api } from "../lib";
+import { AppInfoT, SettingsT, UpdateInfoT, api } from "../lib";
 
 interface Props {
   settings: SettingsT;
@@ -19,9 +19,26 @@ function Toggle({ on, onClick }: { on: boolean; onClick: () => void }) {
 
 export default function SettingsModal({ settings, onChange, onClose, onRefresh, onToast }: Props) {
   const [info, setInfo] = useState<AppInfoT | null>(null);
+  const [update, setUpdate] = useState<UpdateInfoT | null>(null);
+  const [checking, setChecking] = useState(false);
   // 代理输入的本地草稿：失焦 / 回车才提交，避免每敲一个字符就落盘
   const [proxyDraft, setProxyDraft] = useState(settings.proxy);
   const [pmKeyDraft, setPmKeyDraft] = useState(settings.postmanApiKey);
+
+  const checkUpdate = async () => {
+    setChecking(true);
+    try {
+      const u = await api.checkUpdate();
+      setUpdate(u);
+      if (u.hasUpdate) onToast(`发现新版本 ${u.latest}（当前 v${u.current}）`);
+      else if (u.latest) onToast("已是最新版本");
+      else onToast("远端还没有发布版本");
+    } catch (e) {
+      onToast(`检查更新失败：${String(e).replace(/^Error:\s*/, "")}`);
+    } finally {
+      setChecking(false);
+    }
+  };
 
   const commitProxy = () => {
     const v = proxyDraft.trim();
@@ -191,7 +208,36 @@ export default function SettingsModal({ settings, onChange, onClose, onRefresh, 
           </div>
 
           <div className="set-section">关于</div>
-          <div className="set-about">Postlite v{info?.version || "?"}</div>
+
+          <div className="set-row">
+            <div className="set-text">
+              <div className="set-name">Postlite v{info?.version || "?"}</div>
+              <div className="set-desc">
+                {update
+                  ? update.hasUpdate
+                    ? `发现新版本 ${update.latest}（当前 v${update.current}）`
+                    : update.latest
+                      ? `已是最新版本（远端 ${update.latest}）`
+                      : "远端还没有发布版本"
+                  : "联网检查 GitHub Releases 上的最新版本"}
+              </div>
+              {update?.hasUpdate && update.notes && (
+                <div className="set-desc" style={{ marginTop: 4, maxHeight: 120, overflowY: "auto", whiteSpace: "pre-wrap" }}>
+                  {update.notes}
+                </div>
+              )}
+            </div>
+            <div className="set-btns">
+              <button className="mini-btn" onClick={checkUpdate} disabled={checking}>
+                {checking ? "检查中…" : "检查更新"}
+              </button>
+              {update?.hasUpdate && (
+                <button className="mini-btn" onClick={() => api.openReleasesPage()} title="在浏览器中打开 Releases 页面下载">
+                  前往下载
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

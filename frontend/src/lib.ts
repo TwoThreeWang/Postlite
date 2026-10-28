@@ -115,6 +115,16 @@ export interface PostmanSyncResultT {
   failed: string[];
 }
 
+/** 检查更新结果 */
+export interface UpdateInfoT {
+  current: string;
+  latest: string;
+  hasUpdate: boolean;
+  url: string;
+  notes: string;
+  published: string;
+}
+
 export interface AppInfoT {
   version: string;
   dataDir: string;
@@ -358,6 +368,16 @@ export const api = {
     };
   },
   saveSettings: (st: SettingsT) => SettingsService.Save(st as any),
+  checkUpdate: async (): Promise<UpdateInfoT> =>
+    ((await SettingsService.CheckUpdate()) as any) ?? {
+      current: "",
+      latest: "",
+      hasUpdate: false,
+      url: "",
+      notes: "",
+      published: "",
+    },
+  openReleasesPage: () => SettingsService.OpenReleasesPage(),
   postmanListRemote: async (): Promise<PostmanRemoteListT> => {
     const r: any = await PostmanService.ListRemote();
     return {

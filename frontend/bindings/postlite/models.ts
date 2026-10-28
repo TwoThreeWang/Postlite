@@ -312,3 +312,38 @@ export interface Settings {
      */
     "postmanApiKey": string;
 }
+
+/**
+ * UpdateInfo 检查更新结果。
+ */
+export interface UpdateInfo {
+    /**
+     * 当前版本（如 0.1.0）
+     */
+    "current": string;
+
+    /**
+     * 远端最新标签（如 v0.1.1）；远端没有发布时为空
+     */
+    "latest": string;
+
+    /**
+     * Latest 是否比 Current 新
+     */
+    "hasUpdate": boolean;
+
+    /**
+     * Releases 页面（前往下载用）
+     */
+    "url": string;
+
+    /**
+     * 最新 Release 的说明（截断到 500 字符）
+     */
+    "notes": string;
+
+    /**
+     * 发布时间（RFC3339）
+     */
+    "published": string;
+}
