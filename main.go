@@ -4,6 +4,7 @@ import (
 	"embed"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -66,11 +67,10 @@ func main() {
 		Height:     900,
 		MinWidth:   1000,
 		MinHeight:  620,
-		Frameless:  true, // 隐藏系统标题栏，由应用内顶栏承担拖拽与窗口控制
+		Frameless:  runtime.GOOS != "darwin",         // 隐藏系统标题栏，由应用内顶栏承担拖拽与窗口控制；macOS 保留边框以显示系统红绿灯（标题栏由 Mac.TitleBar 隐藏）
 		StartState: application.WindowStateMaximised, // 打开即最大化
 		Mac: application.MacWindow{
 			InvisibleTitleBarHeight: 50,
-			Backdrop:                application.MacBackdropTranslucent,
 			TitleBar:                application.MacTitleBarHiddenInset,
 		},
 		BackgroundColour: application.NewRGB(23, 23, 26),

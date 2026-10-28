@@ -11,6 +11,7 @@ import GitModal from "./components/GitModal";
 import PostmanSyncModal from "./components/PostmanSyncModal";
 import SettingsModal from "./components/SettingsModal";
 import KVEditor from "./components/KVEditor";
+import DialogHost, { confirmDialog, promptDialog } from "./components/Dialog";
 import {
   Col,
   EnvT,
@@ -29,6 +30,9 @@ import {
   updateItemDeep,
   upsertKV,
 } from "./lib";
+
+// macOS 用系统红绿灯（窗口非无边框），其余平台用自绘的窗口按钮
+const isMac = navigator.userAgent.includes("Mac");
 
 interface Tab {
   id: string;
@@ -202,6 +206,9 @@ export default function App() {
     const t = settings.theme === "light" ? "light" : "dark";
     document.documentElement.dataset.theme = t;
     localStorage.setItem("postlite-theme", t);
+    // 窗口底色跟随主题（同 --bg），否则浅色主题下窗口边缘/缩放时露出深色底
+    const [r, g, b] = t === "light" ? [244, 244, 246] : [23, 23, 26];
+    Window.SetBackgroundColour(r, g, b, 255).catch(() => {});
   }, [settings.theme]);
 
   const updateActive = (patch: Partial<Tab>) => {
@@ -403,7 +410,7 @@ export default function App() {
   };
 
   const newCollection = async () => {
-    const name = window.prompt("新集合名称：", "我的集合");
+    const name = await promptDialog("新集合名称：", "我的集合");
     if (!name || !name.trim()) return;
     await api.newCollection(name.trim());
     await reload();
@@ -455,7 +462,7 @@ export default function App() {
     if (!col) return;
     const n = countRequests(col.root);
     const tip = n > 0 ? `及其下面的 ${n} 个请求` : "（空集合）";
-    if (!window.confirm(`确认删除集合「${col.name}」${tip}？删除后不可恢复。`)) return;
+    if (!(await confirmDialog(`确认删除集合「${col.name}」${tip}？删除后不可恢复。`))) return;
     await api.deleteCollection(id);
     // 关掉属于该集合的标签页，避免留下无法保存的孤儿标签
     const orphanIds = new Set(tabs.filter((t) => t.collectionId === id).map((t) => t.id));
@@ -485,14 +492,14 @@ export default function App() {
 
   const clearHistory = async () => {
     if (history.length === 0) return;
-    if (!window.confirm(`确认清空全部 ${history.length} 条历史？`)) return;
+    if (!(await confirmDialog(`确认清空全部 ${history.length} 条历史？`))) return;
     await api.clearHistory();
     setHistory([]);
     showToast("历史已清空");
   };
 
   const renameItem = async (col: Col, item: Item) => {
-    const name = window.prompt("新的请求名称：", item.name);
+    const name = await promptDialog("新的请求名称：", item.name);
     if (!name || !name.trim() || name.trim() === item.name) return;
     const cloned: Col = JSON.parse(JSON.stringify(col));
     updateItemDeep(cloned.root, item.id, (it) => ({ ...it, name: name.trim() }));
@@ -507,7 +514,7 @@ export default function App() {
   };
 
   const deleteItem = async (col: Col, item: Item) => {
-    if (!window.confirm(`确认删除请求「${item.name}」？`)) return;
+    if (!(await confirmDialog(`确认删除请求「${item.name}」？`))) return;
     const cloned: Col = JSON.parse(JSON.stringify(col));
     removeItemDeep(cloned.root, item.id);
     await api.saveCollection(cloned);
@@ -598,8 +605,8 @@ export default function App() {
   };
 
   // 双击标签重命名；已保存的请求同步更新集合里的名称
-  const renameTab = (t: Tab) => {
-    const name = window.prompt("修改标签名称：", t.name);
+  const renameTab = async (t: Tab) => {
+    const name = await promptDialog("修改标签名称：", t.name);
     if (!name || !name.trim() || name.trim() === t.name) return;
     const nn = name.trim();
     setTabs((ts) => ts.map((x) => (x.id === t.id ? { ...x, name: nn } : x)));
@@ -675,7 +682,7 @@ export default function App() {
   const activeVars = activeTab ? mergeVars(activeTab) : [];
 
   return (
-    <div className="app">
+    <div className={isMac ? "app mac" : "app"}>
       <header className="topbar" onDoubleClick={onTopbarDoubleClick}>
         <div className="brand">
           <span className="logo-dot" />
@@ -715,6 +722,7 @@ export default function App() {
             ⚙ 设置
           </button>
 
+          {!isMac && (
           <div className="win-controls">
             <button className="win-btn" onClick={() => Window.Minimise()} title="最小化">
               &#x2500;
@@ -749,6 +757,7 @@ export default function App() {
               &#x2715;
             </button>
           </div>
+          )}
         </div>
       </header>
 
@@ -1054,6 +1063,7 @@ export default function App() {
           );
         })()}
 
+      <DialogHost />
       {toast && <div className="toast">{toast}</div>}
     </div>
   );

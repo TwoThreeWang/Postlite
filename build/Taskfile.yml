@@ -191,16 +191,19 @@ tasks:
       - wails3 generate bindings -f '{{.BUILD_FLAGS}}' -clean=true{{if eq .OBFUSCATED "true"}} -obfuscated{{end}} -ts -i
 
   generate:icons:
-    summary: Generates Windows `.ico` and Mac `.icns` from appicon.png (no Icon Composer `.icon`, which would override appicon.png on macOS)
+    summary: Generates Windows `.ico` from appicon.png and Mac `.icns` from darwin/appicon-mac.png (no Icon Composer `.icon`, which would override them on macOS)
     run: once
     dir: build
     sources:
       - "appicon.png"
+      - "darwin/appicon-mac.png"
     generates:
       - "darwin/icons.icns"
       - "windows/icon.ico"
     cmds:
-      - wails3 generate icons -input appicon.png -macfilename darwin/icons.icns -windowsfilename windows/icon.ico
+      # appicon-mac.png = appicon.png 缩到 824px 居中于 1024 透明画布（macOS 图标网格留边），改图标时两张一起更新
+      - wails3 generate icons -input appicon.png -windowsfilename windows/icon.ico -macfilename=""
+      - wails3 generate icons -input darwin/appicon-mac.png -macfilename darwin/icons.icns -windowsfilename=""
 
   dev:frontend:
     summary: Runs the frontend in development mode

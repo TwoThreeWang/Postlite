@@ -138,6 +138,9 @@ kbd {
 .win-btn:hover { background: var(--panel-3); color: var(--text); }
 .win-btn.close:hover { background: #e81123; color: #ffffff; }
 
+/* macOS：给系统红绿灯让出左侧位置 */
+.app.mac .topbar { padding-left: 86px; }
+
 .app-body {
   display: grid;
   grid-template-columns: var(--sidebar-w, 236px) 1fr;

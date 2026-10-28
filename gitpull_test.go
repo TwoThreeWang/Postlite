@@ -11,12 +11,12 @@ import (
 
 // TestPullAutoCommitBeforeRebase 验证：工作区有未提交变更时 Pull 会先自动提交本地快照，
 // 再成功 rebase 拉取远端新提交（回归 "cannot pull with rebase: You have unstaged changes"）。
-// t.Setenv 隔离 %AppData%，全程使用临时目录，不碰真实数据。
+// isolateDataDir 隔离数据目录，全程使用临时目录，不碰真实数据。
 func TestPullAutoCommitBeforeRebase(t *testing.T) {
 	if _, err := exec.LookPath("git"); err != nil {
 		t.Skip("git not in PATH")
 	}
-	t.Setenv("AppData", t.TempDir())
+	isolateDataDir(t)
 
 	dir := dataDir()
 	if err := os.MkdirAll(filepath.Join(dir, "collections"), 0o755); err != nil {
@@ -102,7 +102,7 @@ func mustGit(t *testing.T, dir string, args ...string) {
 
 // TestGitLogSink 验证 gitRunLogged 会把命令与输出推送到注入的日志通道。
 func TestGitLogSink(t *testing.T) {
-	t.Setenv("AppData", t.TempDir())
+	isolateDataDir(t)
 	dir := dataDir()
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		t.Fatal(err)

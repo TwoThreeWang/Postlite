@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Events } from "@wailsio/runtime";
 import { GitStatusT, api } from "../lib";
+import { confirmDialog } from "./Dialog";
 
 interface Props {
   onClose: () => void;
@@ -209,8 +210,8 @@ export default function GitModal({ onClose, onToast, onPulled }: Props) {
                 <button
                   className="sbtn"
                   disabled={busy || !status.lastCommit || status.lastCommitPushed}
-                  onClick={() => {
-                    if (!window.confirm("撤销最近一次提交？文件内容会保留为未提交状态。")) return;
+                  onClick={async () => {
+                    if (!(await confirmDialog("撤销最近一次提交？文件内容会保留为未提交状态。"))) return;
                     run("撤销提交", api.gitUndoCommit);
                   }}
                   title={

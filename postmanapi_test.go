@@ -10,7 +10,7 @@ import (
 // TestParsePostmanAPIWrappers 验证 Postman API 的 wrapper 格式能剥壳解析
 // （API 返回 {"collection": {...}} / {"environment": {...}}，与本地导出的裸格式不同）。
 func TestParsePostmanAPIWrappers(t *testing.T) {
-	t.Setenv("AppData", t.TempDir())
+	isolateDataDir(t)
 	dir := dataDir()
 	if err := os.MkdirAll(filepath.Join(dir, "collections"), 0o755); err != nil {
 		t.Fatal(err)
@@ -56,7 +56,7 @@ func TestParsePostmanAPIWrappers(t *testing.T) {
 
 // TestSyncAllByNameUpdate 验证同名覆盖保留本地 ID（不产生重复）。
 func TestSyncAllByNameUpdate(t *testing.T) {
-	t.Setenv("AppData", t.TempDir())
+	isolateDataDir(t)
 	dir := dataDir()
 	if err := os.MkdirAll(filepath.Join(dir, "collections"), 0o755); err != nil {
 		t.Fatal(err)

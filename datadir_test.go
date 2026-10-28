@@ -7,9 +7,9 @@ import (
 )
 
 // TestSetDataDirMigration 验证：切换数据目录后 dataDir() 生效、数据文件被迁移、
-// 空串恢复默认。t.Setenv 隔离 %AppData%，不会碰真实数据。
+// 空串恢复默认。isolateDataDir 隔离数据目录，不会碰真实数据。
 func TestSetDataDirMigration(t *testing.T) {
-	t.Setenv("AppData", t.TempDir())
+	isolateDataDir(t)
 
 	// 在默认目录造数据
 	base := defaultDataDir()
@@ -64,4 +64,13 @@ func TestSetDataDirMigration(t *testing.T) {
 	if _, err := os.Stat(overrideFile()); !os.IsNotExist(err) {
 		t.Fatal("override file should be removed after reset")
 	}
+}
+
+// isolateDataDir 把 os.UserConfigDir 的来源（Windows AppData / macOS HOME / Linux XDG_CONFIG_HOME）
+// 都指向临时目录；只设 AppData 时 macOS 上会写进真实数据目录。
+func isolateDataDir(t *testing.T) {
+	d := t.TempDir()
+	t.Setenv("AppData", d)
+	t.Setenv("HOME", d)
+	t.Setenv("XDG_CONFIG_HOME", d)
 }

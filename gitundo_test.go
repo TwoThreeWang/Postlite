@@ -13,7 +13,7 @@ func TestUndoLastCommit(t *testing.T) {
 	if _, err := exec.LookPath("git"); err != nil {
 		t.Skip("git not in PATH")
 	}
-	t.Setenv("AppData", t.TempDir())
+	isolateDataDir(t)
 
 	dir := dataDir()
 	if err := os.MkdirAll(filepath.Join(dir, "collections"), 0o755); err != nil {
