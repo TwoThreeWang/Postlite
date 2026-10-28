@@ -19,12 +19,16 @@ jobs:
         include:
           - os: windows-latest
             name: windows-amd64
+            build: wails3 task build
           - os: macos-latest # Apple Silicon (M 系列)
             name: macos-arm64
-          - os: macos-13 # Intel
-            name: macos-amd64
+            build: wails3 task package
+          - os: macos-latest
+            name: macos-amd64 # Intel：在 ARM runner 上交叉编译（macos-13 Intel runner 已淘汰）
+            build: wails3 task package ARCH=amd64
           - os: ubuntu-latest
             name: linux-amd64
+            build: wails3 task build
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -37,25 +41,26 @@ jobs:
         with:
           node-version: "20"
 
-      # Linux 需要 WebKit/GTK 开发库（Wails v3 依赖）
+      # Linux 需要 GTK4 + WebKitGTK 6.0 开发库（Wails v3 的 cgo 依赖：pkg-config gtk4 webkitgtk-6.0）
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libnss3-dev pkg-config
+          sudo apt-get install -y libgtk-4-dev libwebkit2gtk-6.0-dev libnss3-dev pkg-config
 
       # wails3 版本与 go.mod 保持一致
       - name: Install wails3
         run: go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.34
 
       # Windows / Linux：出可执行文件；macOS：package 会构建并打成 .app（adhoc 签名）
+      # macOS 的两个芯片都跑在 ARM runner 上，Intel 版通过 ARCH=amd64 交叉编译
       - name: Build (Windows/Linux)
         if: runner.os != 'macOS'
-        run: wails3 task build
+        run: ${{ matrix.build }}
 
       - name: Build (macOS .app)
         if: runner.os == 'macOS'
-        run: wails3 task package
+        run: ${{ matrix.build }}
 
       # 归档：macOS 的 .app 是目录，必须压成 zip 才能作为产物
       - name: Stage artifacts

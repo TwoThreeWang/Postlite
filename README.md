@@ -47,7 +47,7 @@ wails3 task build
 ```
 
 要求：Go 1.26+、Node 20+、[wails3 v3.0.0-beta.34](https://v3.wails.io/)。
-Linux 需额外安装 `libgtk-3-dev libwebkit2gtk-4.1-dev`。
+Linux 需额外安装 GTK4 与 WebKitGTK 6.0 开发库：`sudo apt install libgtk-4-dev libwebkit2gtk-6.0-dev`。
 
 ## 构建
 
