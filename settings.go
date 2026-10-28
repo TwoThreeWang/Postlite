@@ -14,7 +14,7 @@ import (
 	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
-const appVersion = "0.1.0"
+const appVersion = "0.1.2"
 
 // Settings 前端可改的偏好项；新增字段记得同步 lib.ts 的 SettingsT。
 type Settings struct {
